@@ -5,8 +5,20 @@
         <title>Pagina</title>
         <script type="text/javascript" src="js/main.js"></script>
     </head>
-    <body>
+    <body onload="load()">
         <h1>Meu primeiro js</h1>
+
+        <button type="button" onclick="botao()">Clique aqui</button>
+        <h3 id="mensagem" onclick="redirecionar()"></h3>
+        <h3 id="mouseover" onmouseover="trocar(this)" onmouseout="voltar(this)">Passe o mouse aqui</h3>
+        <h3 id="mouseover2" onmouseover="trocar(this)" onmouseout="voltar(this)">Passe o mouse aqui</h3>
+        <h3  onmouseover="trocar(this)" onmouseout="voltar(this)">Passe o mouse aqui</h3>
+
+        <select onchange="change(this)">
+            <option value="1">Valor 1</option>
+            <option value="v2">Valor 2</option>
+            <option value="3">Valor 3</option>
+        </select>
     </body>
 
 </html>
