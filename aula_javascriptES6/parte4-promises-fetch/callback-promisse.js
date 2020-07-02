@@ -61,4 +61,10 @@ const doOtherthingPromise = new Promise((resolve, reject)=>{
 
 doSomethingPromise.then(data => console.log(data)).catch(error => console.log(error));
 
+
+//aki vai aparecer a promise que resolver primeiro (race)
+Promise.race([doSomethingPromise(), doOtherthingPromise()]).then(data => {
+    console.log(data);
+})
+
 //tem mais sobre promise no desafio pratico
