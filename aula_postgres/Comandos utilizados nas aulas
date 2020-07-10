@@ -1,0 +1,476 @@
+Comandos aula PostgreSQL
+---------------------------------------------
+Acessando o SGDB pelo terminal
+---------------------------------------------
+> psql user=postgres
+
+---------------------------------------------
+Criando uma ROLE
+---------------------------------------------
+> CREATE ROLE professores NOCREATEDB NOCREATEROLE INHERIT NOLOGIN NOBYPASSRLS CONNECTION LIMIT 10;
+
+---------------------------------------------
+Visualizando as roles 
+---------------------------------------------
+> \du
+> SELECT * FROM pg_roles;
+
+---------------------------------------------
+Alterando uma ROLE (adicionando uma senha)
+---------------------------------------------
+> ALTER ROLE professores PASSWORD '123'
+
+
+---------------------------------------------
+Saindo do banco
+---------------------------------------------
+
+> \q
+
+---------------------------------------------
+Conectando como professores (nao vai da pq nao pode msm ta ali encima "nologin")
+---------------------------------------------
+> psql -U professores auladb
+ 
+Criando outra ROLE
+
+CREATE ROLE daniel PASSWORD '123';
+
+Exlcuindo ROLE
+
+DROP ROLE daniel;
+
+Criando role daniel novamente (com INROLE)
+
+CREATE ROLE daniel LOGIN PASSWORD '123' IN ROLE professores
+
+
+Exlcuindo ROLE novamente
+
+DROP ROLE daniel;
+
+Criando role daniel novamente (COM ROLE)
+
+CREATE ROLE daniel LOGIN PASSWORD '123' ROLE professores
+
+-----------------------------------------------------------
+Criando um tabela
+
+> CREATE TABLE teste (nome varchar);
+
+Dando todos os privilegios na tabela teste para professores
+> GRANT ALL ON TABLE teste TO professores;
+
+AcESSANDO banco com user daniel
+
+> psql -U daniel auladb
+
+Fazendo select na tabela teste (nao vai func pq daniel nao tem permissao)
+
+SELECT nome FROM teste
+
+Removendo daniel  e criando novamente herdando as permissoes da ROLE professores
+
+> DROP ROLE daniel
+> CREATE ROLE daniel LOGIN PASSWORD '123' IN ROLE professores;
+
+Retirando premissoes
+
+REVOKE professores FROM daniel
+
+----------------------------------
+
+Inser com tratamento para idempotencia
+
+insert into nometabea (coluna 1, coluna 2, ...)
+values ('232e243', 'fhgjfgjkdfgjkd', ..) on coflict (coluna1) do nothing
+
+------------------------------------------------
+Olhando as colunas de uma tabela
+
+ select * from information_schema.columns where table_name = "banco"
+ 
+-------------------- 
+Alguams funcoes agragadas com postgres
+
+AVG
+
+> SELECT AVG(valor) from cliente_transacoes;
+
+
+COUNT (having)
+
+> select count(numero) from cliente;
+
+> select count(numero), email
+from cliente
+where email ilike "%gmail.com"
+group by email;
+
+> select count(id), tipo_transacao_id
+from cliente_transacoes
+group by tipo_transacao_id
+having count(id) > 150;
+
+MAX 
+
+> select max(valor) FROM cliente_transacoes;
+> select max(valor), tipo_transacao_id from cliente_transacoes
+group by tipo_transacao_id;
+
+MIN
+
+> select min(valor) FROM cliente_transacoes;
+
+SUM
+
+> select sum(valor) from cliente_transacoes;
+
+> select sum(valor) 
+from cliente_transacoes 
+group by tipo_transacao_id;
+
+> select sum(valor) 
+from cliente_transacoes 
+group by tipo_transacao_id
+order by tipo_transacao_id ASC;
+
+> select sum(valor) 
+from cliente_transacoes 
+group by tipo_transacao_id
+order by tipo_transacao_id DESC;
+
+---------------------------------------------
+select numero, nome from cliente
+
+select count(1) from banco
+select count(1) from agencia -- 296 registros
+
+--296 registros
+select banco.numero, banco.nome, agencia.nome
+from banco
+join agencia on agencia.banco_numero = banco.numero;
+
+
+--296 registros
+select count(banco.numero)
+from banco
+join agencia on agencia.banco_numero = banco.numero;
+
+--
+select banco.numero
+from banco
+join agencia on agencia.banco_numero = banco.numero
+group by banco.numero;
+--or
+select distinct(banco.numero)
+from banco
+join agencia on agencia.banco_numero = banco.numero;
+--
+
+select banco.numero, banco.nome, agencia.numero, agencia.nome
+from banco 
+left join agencia on agencia.banco_numero = banco.numero;
+
+select agencia.numero, agencia.nome, banco.numero, banco.nome
+from agencia
+right join banco on banco.numero = agencia.banco_numero;
+
+select agencia.numero, agencia.nome, banco.numero, banco.nome
+from agencia
+left join banco on banco.numero = agencia.banco_numero;
+
+select banco.numero, banco.nome, agencia.numero, agencia.nome
+from banco
+full join agencia on agencia.banco_numero = banco.numero;
+
+select banco.nome,
+		agencia.nome,
+		conta_corrente.numero,
+		conta_corrente.digito,
+		cliente.nome
+from banco
+join agencia on agencia.banco_numero = banco.numero
+join conta_corrente
+	--on conta_corrente.banco_numero = agencia.banco_numero
+	on conta_corrente.banco_numero = banco.numero
+	and conta_corrente.agencia_numero = agencia.numero
+join cliente
+	on cliente.numero = conta_corrente.cliente_numero
+	
+select count(numero) from cliente
+	
+--transacao de cada cliente e tipo transacao
+select banco.nome,
+		agencia.nome,
+		conta_corrente.numero,
+		conta_corrente.digito,
+		cliente.nome,
+		cliente_transacoes.valor,
+		tipo_transacao.nome
+from banco
+join agencia on agencia.banco_numero = banco.numero
+join conta_corrente
+	--on conta_corrente.banco_numero = agencia.banco_numero
+	on conta_corrente.banco_numero = banco.numero
+	and conta_corrente.agencia_numero = agencia.numero
+join cliente
+	on cliente.numero = conta_corrente.cliente_numero
+join cliente_transacoes
+	on cliente_transacoes.cliente_numero = cliente.numero
+join tipo_transacao
+	on tipo_transacao.id = cliente_transacoes.tipo_transacao_id
+	and cliente_transacoes.cliente_numero = cliente.numero
+--------------------------------------------------------------------------------------
+
+
+
+with tbl_tmp_banco as (
+	select numero, nomefrom banco
+)
+select numero, nome
+from tbl_tmp_banco;
+
+--
+with params as (
+	select 213 as banco_numero
+), tbl_tmp_banco as (
+	select numero, nome
+	from bancojoin params on params.banco_numero = banco.numero
+)
+select numero, nome 
+from tbl_tmp_banco;
+
+
+select banco.numero, banco.nome
+from banco
+join ( 
+	select 213 as banco_numero
+) params on params.banco_numero = banco.numero;
+--
+
+with cliente_e_transacoes as (
+	select cliente.nome as cliente_nome,
+			tipo_transacao.nome as tipo_transacao_nome,
+			cliente_transacoes.valor as tipo_transacao_valor
+	from cliente_transacoes
+	join cliente_transacoes
+	join cliente on cliente.numero =  cliente_transacoes.cliente_numero
+	join tipo_transacao on tipo_transacao.id = cliente_transacoes.tipo_transacao_id
+)
+select cliente_nome, tipo_transacao_nome, tipo_transacao_valor
+from cliente_e_transacoes;
+
+with cliente_e_transacoes as (
+	select cliente.nome as cliente_nome,
+			tipo_transacao.nome as tipo_transacao_nome,
+			cliente_transacoes.valor as tipo_transacao_valor
+	from cliente_transacoes
+	join cliente on cliente.numero =  cliente_transacoes.cliente_numero
+	join tipo_transacao on tipo_transacao.id = cliente_transacoes.tipo_transacao_id
+	join banco on banco.numero = cliente_transacoes.banco_numero and banco.nome ilike '%itaú%'
+)
+select cliente_nome, tipo_transacao_nome, tipo_transacao_valor
+from cliente_e_transacoes;
+
+---- views ---
+
+create or replace view vw_bancos as (
+	select numero, nome, ativo
+	from banco
+);
+
+
+select numero, nome, ativo 
+from vw_bancos
+
+create or replace view vw_bancos_2(banco_numero,  banco_nome, banco_ativo) as (
+	select numero, nome, ativo
+	from banco
+);
+
+select banco_numero, banco_nome, banco_ativo
+from vw_bancos_2
+
+insert into vw_bancos_2 (banco_numero, banco_nome, banco_ativo)
+values(51, 'Banco Boa Idéia', TRUE);
+
+select banco_numero, banco_nome, banco_ativo from vw_bancos_2 where banco_numero=51
+select numero, nome, ativo from banco where numero=51
+
+update vw_bancos_2 set banco_ativo = false where banco_numero=51;
+
+delete from vw_bancos_2 where banco_numero=51;
+
+create or replace temporary view vw_agencia as (
+	select nome from agencia
+)
+
+select nome from vw_agencia
+
+create or replace view vw_bancos_ativos as (
+	select numero, nome, ativo
+	from banco
+	where ativo is true
+)-- with local check option;
+
+--eeese n vai pq nao obedece  a restricao
+insert into vw_bancos_ativos (numero, nome, ativo) values (51, 'Banco Boa Ideia', false);
+
+
+create or replace view vw_bancos_com_a as (
+	select numero, nome, ativo
+	from vw_bancos_ativos
+	where nome ilike 'a%'
+) -- with local check option;
+	with cascaded check option;
+
+
+select numero, nome, ativo from vw_bancos_com_a;
+
+insert into vw_bancos_com_a (numero, nome, ativo) values (333, 'Alf Omega', true);
+--pra esse funcionar ai tem tirar o o whti local chec laaa na view de bancos ativos
+insert into vw_bancos_com_a (numero, nome, ativo) values (331, 'Alf Game', false);
+-- com cascaded check point, vai tentar valiar a viw_banco _ativos msm q nao tenha o check 
+insert into vw_bancos_com_a (numero, nome, ativo) values (332, 'Alf Beta Game', false);
+
+
+--EXEMPLO VIEW recursiva 
+
+create table if not exists funcionarios (
+	id serial,
+	nome varchar(50),
+	gerente integer,
+	primary key (id),
+	foreign key (gerente) references funcionarios(id)
+);
+
+insert into funcionarios (nome, gerente) values ('Ancelino', null);
+insert into funcionarios (nome, gerente) values ('Beatriz', 1);
+insert into funcionarios (nome, gerente) values ('Magno', 1);
+insert into funcionarios (nome, gerente) values ('Cremilda', 2);
+insert into funcionarios (nome, gerente) values ('Wagner', 4);
+
+select id, nome, gerente from funcionarios;
+
+select id, nome, gerente from funcionarios where gerente is null
+union all
+select id, nome, gerente from funcionarios where id = 999;
+
+create or replace recursive view vw_func(id, gerente, funcionario) as (
+	select id, gerente, nome
+	from funcionarios
+	where gerente is null
+	
+	union all
+	
+	select funcionarios.id, funcionarios.gerente, funcionarios.nome
+	from funcionarios
+	join vw_func on vw_func.id = funcionarios.gerente
+				
+);
+
+select id, gerente, funcionario 
+from vw_func;
+
+create or replace recursive view vw_func(id, gerente, funcionario) as (
+	select id, cast('' as VARCHAR) as gerente, nome
+	from funcionarios
+	where gerente is null
+	
+	union all
+	
+	select funcionarios.id, gerentes.nome, funcionarios.nome
+	from funcionarios
+	join vw_func on vw_func.id = funcionarios.gerente
+	join funcionarios gerentes on gerentes.id = vw_func.id
+				
+);
+
+--transacoes
+
+begin;
+	update ...
+	
+	update ...
+commit;
+
+select numero, nome, ativo from banco order by numero;
+
+update banco set ativo = false where numero=0;
+
+begin;
+update banco set ativo = true where numero=0;
+select numero, nome, ativo from banco where numero=0;
+rollback;
+
+begin;
+update banco set ativo = true where numero=0;
+commit;
+
+
+select id, gerente, nome
+from funcionarios;
+
+begin;
+update funcionarios set gerente = 2 where id = 3;
+savepoint sf_func;
+update funcionarios set gerente = null;
+rollback to sf_func;
+update funcionarios set gerente = 3 where id = 5;
+commit;
+
+--funcoes
+
+
+
+create or replace function func_somar(integer, integer)
+returns integer
+security definer
+--returns null on null input
+called on null input
+language sql
+as $$
+	select coalesce($1,20)+coalesce($2,20);
+$$;
+
+select func_somar(1, null);
+
+--retorna priemor valor nao nulo de uma lista > coalesce
+--select coalesce(null, null, 'digital', 'maria');
+
+create or replace function bancos_add(p_numero integer, p_nome varchar, p_ativo boolean)
+returns integer
+security invoker
+language plpgsql
+called on null input
+as $$
+declare variavel_id integer;
+begin
+	if p_numero is null or p_nome is null or p_ativo is null then
+		return 0;
+	end if;
+
+	select into variavel_id numero
+	from banco
+	where numero=p_numero;
+	
+	if variavel_id is null then
+		insert into banco(numero, nome, ativo)
+		values (p_numero, p_nome, p_ativo);
+	else
+		return variavel_id;
+	end if;
+	
+	select into variavel_id numero
+	from banco
+	where numero=p_numero;
+	
+	return variavel_id;
+end; $$;
+
+--volta null pq nao existe msm esse banco
+select bancos_add(5433,'Bnaco Novoc om outro cod', true);
+--select bancos_add(5432,'Bnaco Novo',null);
+
+select numero, nome, ativo from banco where numero=5433;
