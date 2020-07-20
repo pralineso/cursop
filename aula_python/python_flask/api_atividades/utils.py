@@ -28,8 +28,8 @@ def exclui_pessoa():
     pessoa = Pessoas.query.filter_by(nome='Julia').first()
     pessoa.delete()
 
-def insere_usuarios(login, senha):
-    usuario = Usuarios(login=login, senha=senha)
+def insere_usuarios(login, senha, ativo):
+    usuario = Usuarios(login=login, senha=senha, ativo=ativo)
     usuario.save()
 
 def consulta_todos_usuarios():
@@ -52,13 +52,14 @@ def put_status():
     print(atividade.status)
 
 if __name__ == '__main__':
-     #insere_usuarios('mariana', '1234')
-     #insere_usuarios('julia', '3214')
-     #consulta_todos_usuarios()
+     #insere_usuarios('julia', '1234', 1)
+     #insere_usuarios('marco', '3214', 1)
+     #insere_usuarios('polo', '123', 0)
+     consulta_todos_usuarios()
      # insere_pessoas()
      # altera_pessoa()
      #exclui_pessoa()
      #consulta_pessoas()
      #consula_atividade_nome('Mara Miranda')
      #add_status()
-     put_status()
+     #put_status()

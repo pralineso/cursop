@@ -22,7 +22,10 @@ api = Api(app)
 def verificacao(login, senha):
     if not (login, senha):
         return False
-    return Usuarios.query.filter_by(login=login, senha=senha).first()
+    usuario = Usuarios.query.filter_by(login=login, senha=senha).first()
+    if (usuario.ativo == 0):
+        return False
+    return usuario
 
 
 class Pessoa(Resource):
@@ -43,6 +46,7 @@ class Pessoa(Resource):
 
         return response
 
+    @auth.login_required
     def put(self, nome):
         pessoa = Pessoas.query.filter_by(nome=nome).first()
         try:
@@ -61,6 +65,7 @@ class Pessoa(Resource):
             response = {'Error': 'Não foi possível atualizar os dados de {}'.format(pessoa.nome)}
         return response
 
+    @auth.login_required
     def delete(self, nome):
         pessoa = Pessoas.query.filter_by(nome=nome).first()
         mensagem = 'Pessoa {} excluida com sucesso'.format(pessoa.nome)
@@ -74,6 +79,7 @@ class ListaPessoa(Resource):
         response = [{'id':i.id, 'nome':i.nome, 'idade':i.idade} for i in pessoas]
         return response
 
+    @auth.login_required
     def post(self):
         dados = request.json
         pessoa = Pessoas(nome=dados['nome'], idade=dados['idade'])
@@ -101,6 +107,7 @@ class Atividade(Resource):
             response = {'Error': 'O id informado não foi encontrado'}
         return response
 
+    @auth.login_required
     def put(self, id_atividade):
         atividade = Atividades.query.filter_by(id=id_atividade).first()
         try:
@@ -126,6 +133,7 @@ class ListaAtividades(Resource):
         response = [{'id':i.id, 'nome':i.nome, 'pessoa':i.pessoa.nome} for i in atividades]
         return response
 
+    @auth.login_required
     def post(self):
         dados = request.json
         pessoa = Pessoas.query.filter_by(nome=dados['pessoa']).first()
@@ -145,7 +153,7 @@ api.add_resource(Pessoa, '/pessoa/<string:nome>/')
 api.add_resource(ListaPessoa, '/pessoa/')
 # api.add_resource(Atividade, '/atividade/<string:nome_pessoa>/')
 api.add_resource(Atividade, '/atividade/<int:id_atividade>/')
-api.add_resource(ListaAtividades, '/atividades/')
+api.add_resource(ListaAtividades, '/atividade/')
 
 if __name__ == '__main__':
     app.run(debug=True)
