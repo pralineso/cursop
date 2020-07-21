@@ -8,6 +8,7 @@ class Evento(models.Model):
     titulo = models.CharField(max_length=100)
     descricao = models.TextField(blank=True, null=True)
     data_evento = models.DateTimeField(verbose_name='Data do Evento') #esse verbose é o nome q vai aparecer la na coluna
+    local = models.TextField(blank=True, null=True)
     data_criacao = models.DateTimeField(auto_now=True)
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
 

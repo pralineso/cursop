@@ -53,6 +53,7 @@ def submit_evento(request):
     if request.POST:
         titulo = request.POST.get('titulo')
         data_evento = request.POST.get('data_evento')
+        local = request.POST.get('local')
         descricao = request.POST.get('descricao')
         usuario = request.user
         id_evento = request.POST.get('id_evento')
@@ -62,6 +63,7 @@ def submit_evento(request):
                 evento.titulo = titulo
                 evento.descricao = descricao
                 evento.data_evento = data_evento
+                evento.local = local
                 evento.save()
             #esse comentado é o msm de cima, mas o de cima ta validando..
             # Evento.objects.filter(id=id_evento).update(titulo=titulo,
@@ -70,6 +72,7 @@ def submit_evento(request):
         else:
             Evento.objects.create(titulo=titulo,
                                   data_evento=data_evento,
+                                  local=local,
                                   descricao=descricao,
                                   usuario=usuario)
     return redirect('/')

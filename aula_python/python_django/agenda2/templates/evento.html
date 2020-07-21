@@ -2,29 +2,53 @@
 
 {% block content %}
 
-<h2>Evento</h2>
-    <a href="/">
-        <button type="button">Voltar</button>
-    </a>
-    <br><br>
-<form action="submit" method="POST">{% csrf_token %}
-    <label>Titulo</label>
-    <input type="number" name="id_evento" value="{{evento.id}}" hidden>
-    <br>
-    <input type="text" name="titulo" size="24" value="{{evento.titulo}}">
-    <br>
-    <label>Data Evento</label>
-    <br>
-    <input type="datetime-local" name="data_evento" value="{{evento.get_data_input_evento}}">
-    <br>
-    <label>Descrição</label>
-    <br>
-    <textarea name="descricao" rows="5" cols="24">{{evento.descricao}}</textarea>
-    <br><br>
-    <button type="submit">Salvar</button>
-    <a href="/">
-        <button type="button">Cancelar</button>
-    </a>
-</form>
+<div class="text-center">
+    <h2>Evento</h2>
+</div>
+</br>
+</br>
 
+<div class="container text-center">
+    <form action="submit" method="POST">{% csrf_token %}
+        <div class="form-group row justify-content-md-center ">
+            <label class="col-sm-2 col-form-label text-left">Titulo</label>
+            <div class="col-sm-4">
+                <input type="number" name="id_evento" class="form-control" value="{{evento.id}}" hidden>
+                <input type="text" name="titulo" class="form-control" size="24" value="{{evento.titulo}}">
+            </div>
+        </div>
+        <br>
+        <div class="form-group row justify-content-md-center ">
+            <label class="col-sm-2 col-form-label text-left">Data Evento</label>
+             <div class="col-sm-4">
+                <input type="datetime-local" name="data_evento" class="form-control" value="{{evento.get_data_input_evento}}">
+             </div>
+        </div>
+        <br>
+        <div class="form-group row justify-content-md-center ">
+            <label class="col-sm-2 col-form-label text-left">Local</label>
+            <div class="col-sm-4">
+                <textarea name="local" class="form-control" rows="1" cols="24">{{evento.local}}</textarea>
+            </div>
+        </div>
+        <br>
+        <div class="form-group row justify-content-md-center ">
+            <label class="col-sm-2 col-form-label text-left">Descrição</label>
+            <div class="col-sm-4">
+                <textarea name="descricao" class="form-control" rows="5" cols="24">{{evento.descricao}}</textarea>
+            </div>
+        </div>
+        <br>
+        <div class="form-group row justify-content-md-center ">
+             <div class="col-sm-1">
+                <button class="btn btn-primary" type="submit">Salvar</button>
+             </div>
+            <div class="col-sm-1">
+                <a href="/">
+                    <button class="btn btn-danger" type="button">Cancelar</button>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
 {% endblock %}

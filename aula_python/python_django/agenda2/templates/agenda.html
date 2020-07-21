@@ -1,17 +1,18 @@
 {% extends "model-page.html" %}
 
 {% block content %}
+<div class="text-center">
     <h2>Agendamentos</h2>
-
+    <br>
     <a href="evento/">
-        <button type="button">Novo Evento</button>
+        <button class="btn btn-primary" type="button">Novo Evento</button>
     </a>
-
-    <ul style="font-size: 18px">
+    <br><br>
+    <ul class="list-group list-group-flush" style="font-size: 18px">
         {% for evento in eventos %}
-            <li>
+            <li class="list-group-item" >
                 <div style={%if evento.get_evento_atrasado%}
-                                "color:red"
+                            "color:red"
                             {%endif%}>
                     {{ evento.titulo }} - {{ evento.get_data_evento }}
                     (<a href="evento/?id={{evento.id}}">Editar</a>|
@@ -20,4 +21,5 @@
             </li>
         {% endfor %}
     </ul>
+</div>
 {% endblock %}
