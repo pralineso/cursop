@@ -54,7 +54,8 @@ class ListaDesenvolvedores(Resource):
 
 api.add_resource(Desenvolvedor, '/dev/<int:id>/')
 api.add_resource(ListaDesenvolvedores, '/dev/')
-api.add_resource(Habilidades, '/habilidades/')
+# api.add_resource(Habilidades, '/habilidades/<int:id>/') #teste put e delete
+api.add_resource(Habilidades, '/habilidades/') #teste get e post
 
 
 if __name__ == '__main__':
