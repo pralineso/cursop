@@ -18,11 +18,16 @@ from django.urls import path
 from core import views
 from django.views.generic import RedirectView
 
+handler404 = 'core.views.custom_page_error_404'
+handler500 = 'core.views.custom_error_view'
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('', views.index),
     path('', RedirectView.as_view(url='/agenda/')),
     path('agenda/', views.lista_eventos),
+    path('agenda/historico/', views.historico),
     # path('agenda/lista/', views.json_lista_evento),
     path('agenda/lista/<int:id_usuario>/', views.json_lista_evento),
     path('agenda/evento/', views.evento),
@@ -30,5 +35,6 @@ urlpatterns = [
     path('agenda/evento/delete/<int:id_evento>', views.delete_evento),
     path('login/', views.login_user),
     path('login/submit', views.submit_login),
-    path('logout/', views.logout_user)
+    path('logout/', views.logout_user),
+    path('error/', RedirectView.as_view(url='/error/')),
 ]
